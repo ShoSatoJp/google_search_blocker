@@ -42,7 +42,7 @@
     "second": "a",
     "container_class": "google_search_block_container container_yahoo_pc",
     "result_container": "#left",
-    "link_extractor":"(src => {for (const str of new URL(src).pathname.split('/')) {if (str.startsWith('RU')) return decodeURIComponent(str.replace('RU=', ''));}})"
+    "link_extractor":"(src => {if (src.startsWith('https://r.search.yahoo.com/')) {for (const str of new URL(src).pathname.split('/')) {if (str.startsWith('RU')) return decodeURIComponent(str.replace('RU=', ''));}} else {return src;}})"
 }, {
     "environment": "yahoo_com_mobile",
     "first": ".sw-CardBase",
