@@ -488,7 +488,10 @@
             let removed_ = false;
             if (link_) {
                 e.style['background-color'] = '';
-                const url_ = link_.getAttribute('href');
+                let url_ = link_.getAttribute('href');
+                if(SETTINGS.link_extractor){
+                    url_ = eval(SETTINGS.link_extractor)(url_);
+                }
                 if (!url_.startsWith('http')) return;
                 const host_ = new URL(url_).host;
                 for (let i = 0, len = BLOCK.length; i < len; i++) {
