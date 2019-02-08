@@ -9,6 +9,7 @@
 // @match        https://www.google.co.jp/search?*
 // @match        https://www.bing.com/search?*
 // @match        https://search.yahoo.co.jp/*
+// @match        https://search.yahoo.com/search*
 // @resource     label        https://github.com/shosatojp/google_search_blocker/raw/master/container.html?
 // @resource     float        https://github.com/shosatojp/google_search_blocker/raw/master/float.html?
 // @resource     buttons      https://github.com/shosatojp/google_search_blocker/raw/master/buttons.html?
@@ -711,6 +712,10 @@
                 return equalsClassNameWhenAdded('w');
             case 'yahoo_mobile':
                 return equalsClassNameWhenAdded('sw-CardBase');
+            case 'yahoo_com_pc':
+                return containsInClassListWhenAdded('algo');
+            case 'yahoo_com_mobile':
+                return equalsClassNameWhenAdded('sw-CardBase');
             default:
                 throw new Error('invalid environment');
         }
@@ -731,6 +736,8 @@
                 environment_ = isMobile_ ? "bing_mobile" : 'bing_pc';
             } else if (location.host === 'search.yahoo.co.jp') {
                 environment_ = isMobile_ ? 'yahoo_mobile' : "yahoo_pc";
+            }else if(location.host==='search.yahoo.com'){
+                environment_ = isMobile_ ? 'yahoo_com_mobile' : "yahoo_com_pc";
             }
             console.log('environment:', environment_);
         }

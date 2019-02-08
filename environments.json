@@ -36,4 +36,16 @@
     "second": "a",
     "container_class": "sw-CardBase container_yahoo_mobile",
     "result_container": "#contentsInner"
+}, {
+    "environment": "yahoo_com_pc",
+    "first": ".algo",
+    "second": "a",
+    "container_class": "google_search_block_container container_yahoo_pc",
+    "result_container": "#left"
+}, {
+    "environment": "yahoo_com_mobile",
+    "first": ".sw-CardBase",
+    "second": "a",
+    "container_class": "sw-CardBase container_yahoo_mobile",
+    "result_container": "#contentsInner"
 }]
