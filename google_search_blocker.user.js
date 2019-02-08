@@ -195,6 +195,8 @@
                     rej();
                     return;
                 }
+                console.log(gapi);
+                console.log('gapi' in unsafeWindow);
                 if (!('gapi' in window)) {
                     const script = document.createElement('script');
                     script.setAttribute('src', 'https://apis.google.com/js/api.js');
