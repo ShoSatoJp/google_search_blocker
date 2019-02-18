@@ -110,4 +110,7 @@ If you install [Google Search Blocker Tools](https://github.com/shosatojp/google
 
 
 ## Scheduled Update
-None. Please request for new features via issues.
+* Block suggestion & related by text.
+* Block at not search result page.
+
+Please request for new features via issues.

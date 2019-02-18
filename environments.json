@@ -14,6 +14,14 @@
             "has_ancestor_of": {
                 "classList": ["xpdopen"]
             }
+        },
+        "suggests": {
+            "container": "form#tsf ul[role='listbox']>li",
+            "text": "span"
+        },
+        "related": {
+            "container": "#brs p",
+            "text": "a"
         }
     },
     "google_mobile": {
@@ -26,7 +34,15 @@
         "observer_fn_arguments": ["xpd"],
         "title": "a>div",
         "body": "hr + div",
-        "info": ""
+        "info": "",
+        "suggests": {
+            "container": "form#tsf ul[role='listbox']>li",
+            "text": "span"
+        },
+        "related": {
+            "container": ".gciEic a",
+            "text": "div"
+        }
     },
     "bing_pc": {
         "first": ".b_algo",
@@ -38,7 +54,15 @@
         "observer_fn_arguments": ["b_algo"],
         "title": "h2",
         "body": "p",
-        "info": ""
+        "info": "",
+        "suggests": {
+            "container": "ul.sa_drw>li",
+            "text": "div.sa_tm"
+        },
+        "related": {
+            "container": ".b_rs li",
+            "text": "a"
+        }
     },
     "bing_mobile": {
         "first": ".b_algo",
@@ -49,7 +73,15 @@
         "observer_fn_arguments": ["b_algo"],
         "title": "h2",
         "body": ".b_caption",
-        "info": ""
+        "info": "",
+        "suggests": {
+            "container": "ul.sa_drw>li",
+            "text": "div.sa_tm"
+        },
+        "related": {
+            "container": ".b_rs li",
+            "text": "a"
+        }
     },
     "yahoo_co_jp_pc": {
         "first": ".w",
@@ -61,7 +93,15 @@
         "observer_fn_arguments": ["w"],
         "title": "a",
         "body": "p",
-        "info": "span.r"
+        "info": "span.r",
+        "suggests": {
+            "container": "ul#sugres>li",
+            "text": null
+        },
+        "related": {
+            "container": "#Si2 a",
+            "text": null
+        }
     },
     "yahoo_co_jp_mobile": {
         "first": ".sw-CardBase",
@@ -72,6 +112,14 @@
         "observer_fn_arguments": ["sw-CardBase"],
         "title": "h3",
         "body": "p",
-        "info": ""
+        "info": "",
+        "suggests": {
+            "container": "#assist>li",
+            "text": ".SearchAssist__text"
+        },
+        "related": {
+            "container": ".Unit__listItem",
+            "text": "a"
+        }
     }
 }
