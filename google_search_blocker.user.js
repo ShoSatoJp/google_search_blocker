@@ -25,9 +25,29 @@
 // @noframes
 // ==/UserScript==
 
-(function () {
+// const getResourceText = GM_getResourceText || (function(id){
+
+//     return 
+// });
+const getValue = GM_getValue || ((id, def) => {
+    return new Promise((res) => {
+        chrome.storage.local.get([id], result => {
+            res(result[id] || def);
+        });
+    });
+});
+const setValue = GM_setValue || ((id, value) => {
+    return new Promise((res) => {
+        chrome.storage.local.set({
+            [id]: value
+        }, () => {
+            res();
+        });
+    });
+});
+(async function () {
     'use strict';
-    console.log(`%cGoogle Search Blocker ${GM_info.script.version}`, 'color:lightseagreen;font-size:large;');
+    console.log(`%cGoogle Search Blocker 1.0.1`, 'color:lightseagreen;font-size:large;');
     console.log(`%cCopyright © 2019 Sho Sato. All Rights Reserved.`, 'color:lightseagreen;');
     console.log(`%chttps://github.com/shosatojp/google_search_blocker`, 'color:lightseagreen;');
 
@@ -464,15 +484,15 @@
         Patterns.get_current_env_id = function () {
             return current_env_id;
         };
-        Patterns._get_basic = function () {
-            return GM_getValue('rules_v03', {
+        Patterns._get_basic = async function () {
+            return await GM_getValue('rules_v03', {
                 main: {
                     rules: []
                 }
             });
         };
-        Patterns._set_basic = function (obj) {
-            GM_setValue('rules_v03', obj)
+        Patterns._set_basic = async function (obj) {
+            await GM_setValue('rules_v03', obj)
         };
         Patterns.resolve_inherit = function (target_env_id, environment) {
             const env = environment[target_env_id];
@@ -481,8 +501,8 @@
             });
             return environment[target_env_id];
         };
-        Patterns.get = function () {
-            const envs = Patterns._get_basic();
+        Patterns.get = async function () {
+            const envs = await Patterns._get_basic();
             const env = envs[current_env_id];
             const rules = (env && Patterns.resolve_inherit(current_env_id, envs).rules) || [];
             return rules.map(e => Object.setPrototypeOf(e, Rule.prototype)).map(e => (e.make_command_function(), e));
@@ -496,13 +516,13 @@
         Patterns.set_json = function (json) {
             Patterns._set_basic(JSON.parse(json));
         };
-        Patterns.add = function (src) {
-            const e = Patterns._get_basic();
+        Patterns.add = async function (src) {
+            const e = await Patterns._get_basic();
             e[current_env_id].rules.push(new Rule(src));
             Patterns._set_basic(e);
         };
-        Patterns.remove = function (src) {
-            const e = Patterns._get_basic();
+        Patterns.remove = async function (src) {
+            const e = await Patterns._get_basic();
             e[current_env_id].rules = e[current_env_id].rules.filter(e => e.source !== src);
             Patterns._set_basic(e);
         };
@@ -510,9 +530,9 @@
             current_env_id = env_id;
             localStorage.setItem('env', env_id);
         };
-        Patterns.get_all = function () {
+        Patterns.get_all = async function () {
             const result = [];
-            const object = Patterns._get_basic();
+            const object = await Patterns._get_basic();
             for (const key in object) {
                 if (object.hasOwnProperty(key)) {
                     result.push(`==${key}==`);
@@ -521,15 +541,15 @@
             }
             return result;
         };
-        Patterns.count_per_env = function (env_id) {
-            return Patterns._get_basic()[env_id].rules.length;
+        Patterns.count_per_env = async function (env_id) {
+            return await Patterns._get_basic()[env_id].rules.length;
         };
         Patterns.count_all_env = function () {
             return Patterns.get_env_ids().map(env_id => Patterns.count_per_env(env_id)).reduce((a, b) => a + b, 0);
         };
-        Patterns.get_env_ids = function () {
+        Patterns.get_env_ids = async function () {
             const result = [];
-            const object = Patterns._get_basic();
+            const object = await Patterns._get_basic();
             for (const key in object) {
                 if (object.hasOwnProperty(key)) {
                     result.push(key);
@@ -568,9 +588,9 @@
         };
 
         { //互換性 for <= 0.13.7 to 1.0.1
-            const old_rules = GM_getValue('rules', undefined);
+            const old_rules = await GM_getValue('rules', undefined);
             if (old_rules && old_rules instanceof Array && old_rules.length) {
-                const e = Patterns._get_basic();
+                const e = await Patterns._get_basic();
                 e['main'].rules = old_rules;
                 Patterns._set_basic(e);
                 GM_setValue('rules', []);
@@ -1313,7 +1333,7 @@
                 console.log('%cDOWNLOAD', `color:${Colors.Pink};`, BLOCK.length);
                 GoogleSearchBlock.all();
             }, () => {
-                const patterns = Patterns._get_basic();
+                const patterns =await Patterns._get_basic();
                 console.log('%cUPLOAD', `color:${Colors.Blue};`, Patterns.count_all_env());
                 return JSON.stringify(patterns);
             }, function usesync() {
