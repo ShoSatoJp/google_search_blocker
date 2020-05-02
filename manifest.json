@@ -3,21 +3,23 @@
     "name": "Google Search Blocker",
     "version": "1.0.1",
     "description": "Block google, bing and yahoo search results you don't want to see.",
-    "content_scripts": [{
-        "matches": [
-            "https://www.google.com/search?*",
-            "https://www.google.co.jp/search?*",
-            "https://www.bing.com/search?*",
-            "https://search.yahoo.co.jp/*"
-        ],
-        "js": ["google_search_blocker.user.js"],
-        "run_at": "document_start"
-    }],
-    "icons": {
-        "128": "OS_me.jpg"
-    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://www.google.com/search?*",
+                "*://www.google.co.jp/search?*",
+                "*://www.bing.com/search?*",
+                "*://search.yahoo.co.jp/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
     "permissions": [
-        "storage", "tabs"
+        "storage",
+        "tabs"
     ],
     "web_accessible_resources": [
         "form.html",
@@ -26,10 +28,14 @@
         "selectors.html",
         "environments.json",
         "languages.json",
-        "button_blocked_rule.html"
+        "button_blocked_rule.html",
+        "google_search_blocker.user.js"
     ],
     "background": {
-        "scripts": ["./background/main.js"]
+        "scripts": [
+            "./background.js"
+        ],
+        "persistent": false
     },
     "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'"
 }

@@ -24,6 +24,84 @@
 // @run-at       document-start
 // @noframes
 // ==/UserScript==
+
+
+const Messenger = (() => {
+    /**
+     * Constructor
+     * 
+     * event_name: custom event name. duplicate should be avoided.
+     * name      : messenger's NAME
+     */
+    const Messenger = function (event_name, name) {
+        const self = this;
+        self.EVENT_NAME = event_name;
+        self.NAME = name;
+        self.messageId = 0;
+        self.messageQueue = [];
+
+        document.addEventListener(self.EVENT_NAME, e => {
+            const data = JSON.parse(e.detail);
+            if (data.receiver === self.NAME) {
+                const message = self.messageQueue.find(e => e.messageId === data.prevMessageId);
+                if (message) {
+                    // response
+                    self.messageQueue = self.messageQueue.filter(e => e.messageId !== message.messageId);
+                    message.callback(data);
+                } else {
+                    // incoming
+                    if (self.onmessage) {
+                        self.onmessage(data);
+                    }
+                }
+            }
+        });
+    };
+
+    /**
+     * Send
+     * 
+     * receiver     : receiver's NAME
+     * data         : json seriarizable object
+     * prevMessageId: respond to this message
+     * sendOnly     : don't wait for response
+     */
+    Messenger.prototype.send = async function (receiver, data, prevMessageId = null, sendOnly = false) {
+        const self = this;
+        data.prevMessageId = prevMessageId;
+        data.messageId = self.NAME + self.messageId++;
+        data.receiver = receiver;
+        data.sender = self.NAME;
+        const e = new CustomEvent(self.EVENT_NAME, {
+            detail: JSON.stringify(data),
+        });
+
+        if (sendOnly) {
+            document.dispatchEvent(e);
+        } else {
+            return await new Promise((res, rej) => {
+                self.messageQueue.push({
+                    callback: (response) => {
+                        res(response);
+                    },
+                    messageId: data.messageId
+                });
+                document.dispatchEvent(e);
+            });
+        }
+    };
+
+    Messenger.prototype.onmessage = function (data) { };
+
+    return Messenger;
+})();
+
+(async () => {
+    const m = new Messenger('shosato.jp', 'inject');
+    const a = await m.send('content', { aaa: 'hoge' });
+    console.log(a.aaa);
+})();
+
 var CODE;
 (async function code() {
     if (typeof CODE !== 'undefined') {
@@ -106,7 +184,16 @@ var CODE;
         ExtensionIO.loadResources = async function (resources_map) {
             for (const key in resources_map) {
                 if (resources_map.hasOwnProperty(key)) {
-                    const url = chrome.runtime.getURL(resources_map[key]);
+                    const url = await new Promise((res, rej) => {
+                        chrome.runtime.sendMessage('pdpbmaeabdhagcdljokcmoeohiagongo', {
+                            type: 'sendMessage',
+                        }), response => {
+                            console.log(response);
+                            res(response);
+                        };
+                    });
+                    console.log(resources_map[key]);
+                    // const url = chrome.runtime.getURL(resources_map[key]);
                     this.resources[key] = await (await fetch(url)).text();
                 }
             }
@@ -130,11 +217,11 @@ var CODE;
     })();
 
     if (!ExtensionIO.isTampermonkey) {
-        chrome.runtime.sendMessage({
-            method: 'initSync'
-        }, e => {
-            console.log(e);
-        });
+        // chrome.runtime.sendMessage({
+        //     method: 'initSync'
+        // }, e => {
+        //     console.log(e);
+        // });
         await ExtensionIO.loadResources(ExtensionIO.resources_map);
         await ExtensionIO.getValuesOnInit();
     }

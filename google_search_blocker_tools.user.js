@@ -18,6 +18,7 @@
 // @noframes
 // ==/UserScript==
 
+console.log('====================');
 
 (function () {
     const LANGUAGE = (window.navigator.languages && window.navigator.languages[0]) ||
