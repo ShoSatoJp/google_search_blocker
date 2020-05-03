@@ -19,7 +19,10 @@
     ],
     "permissions": [
         "storage",
-        "tabs"
+        "tabs",
+        "webNavigation",
+        "http://*/*",
+        "https://*/*"
     ],
     "web_accessible_resources": [
         "form.html",

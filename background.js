@@ -1,17 +1,11 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log(message);
-    const data = JSON.parse(message);
-    sendResponse('hoge');
-    // sendResponse(chrome.runtime.getURL(...data.args));
+chrome.webNavigation.onCommitted.addListener((e) => {
+    console.log(e);
+    if (e.parentFrameId === -1) {
+        chrome.tabs.executeScript(e.tabId, {
+            file: './google_search_blocker.user.js'
+        });
+    }
 });
-chrome.tabs.onMessage.addListener((message, sender, sendResponse) => {
-    console.log(message);
-    sendResponse('hoge');
-    // sendResponse(chrome.runtime.getURL(...data.args));
-});
-
-console.log('hogehoge')
-
-setInterval(() => {
-    console.log('===');
-}, 1000);
+chrome.webNavigation.onDOMContentLoaded.addListener(e => {
+    console.log('dom', e)
+})

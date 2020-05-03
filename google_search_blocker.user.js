@@ -24,83 +24,10 @@
 // @run-at       document-start
 // @noframes
 // ==/UserScript==
-
-
-const Messenger = (() => {
-    /**
-     * Constructor
-     * 
-     * event_name: custom event name. duplicate should be avoided.
-     * name      : messenger's NAME
-     */
-    const Messenger = function (event_name, name) {
-        const self = this;
-        self.EVENT_NAME = event_name;
-        self.NAME = name;
-        self.messageId = 0;
-        self.messageQueue = [];
-
-        document.addEventListener(self.EVENT_NAME, e => {
-            const data = JSON.parse(e.detail);
-            if (data.receiver === self.NAME) {
-                const message = self.messageQueue.find(e => e.messageId === data.prevMessageId);
-                if (message) {
-                    // response
-                    self.messageQueue = self.messageQueue.filter(e => e.messageId !== message.messageId);
-                    message.callback(data);
-                } else {
-                    // incoming
-                    if (self.onmessage) {
-                        self.onmessage(data);
-                    }
-                }
-            }
-        });
-    };
-
-    /**
-     * Send
-     * 
-     * receiver     : receiver's NAME
-     * data         : json seriarizable object
-     * prevMessageId: respond to this message
-     * sendOnly     : don't wait for response
-     */
-    Messenger.prototype.send = async function (receiver, data, prevMessageId = null, sendOnly = false) {
-        const self = this;
-        data.prevMessageId = prevMessageId;
-        data.messageId = self.NAME + self.messageId++;
-        data.receiver = receiver;
-        data.sender = self.NAME;
-        const e = new CustomEvent(self.EVENT_NAME, {
-            detail: JSON.stringify(data),
-        });
-
-        if (sendOnly) {
-            document.dispatchEvent(e);
-        } else {
-            return await new Promise((res, rej) => {
-                self.messageQueue.push({
-                    callback: (response) => {
-                        res(response);
-                    },
-                    messageId: data.messageId
-                });
-                document.dispatchEvent(e);
-            });
-        }
-    };
-
-    Messenger.prototype.onmessage = function (data) { };
-
-    return Messenger;
-})();
-
-(async () => {
-    const m = new Messenger('shosato.jp', 'inject');
-    const a = await m.send('content', { aaa: 'hoge' });
-    console.log(a.aaa);
-})();
+console.log(document.body);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('domcontentloaded');
+});
 
 var CODE;
 (async function code() {
@@ -110,6 +37,78 @@ var CODE;
         script.textContent = `(${code.toString()})();`;
         document.documentElement.appendChild(script);
     }
+
+    const Messenger = (() => {
+        /**
+         * Constructor
+         * 
+         * event_name: custom event name. duplicate should be avoided.
+         * name      : messenger's NAME
+         */
+        const Messenger = function (event_name, name) {
+            const self = this;
+            self.EVENT_NAME = event_name;
+            self.NAME = name;
+            self.messageId = 0;
+            self.messageQueue = [];
+
+            document.addEventListener(self.EVENT_NAME, e => {
+                const data = JSON.parse(e.detail);
+                if (data.receiver === self.NAME) {
+                    const message = self.messageQueue.find(e => e.messageId === data.prevMessageId);
+                    if (message) {
+                        // response
+                        self.messageQueue = self.messageQueue.filter(e => e.messageId !== message.messageId);
+                        message.callback(data);
+                    } else {
+                        // incoming
+                        if (self.onmessage) {
+                            self.onmessage(data);
+                        }
+                    }
+                }
+            });
+        };
+
+        /**
+         * Send
+         * 
+         * receiver     : receiver's NAME
+         * data         : json seriarizable object
+         * prevMessageId: respond to this message
+         * sendOnly     : don't wait for response
+         */
+        Messenger.prototype.send = async function (receiver, data, prevMessageId = null, sendOnly = false) {
+            const self = this;
+            data.prevMessageId = prevMessageId;
+            data.messageId = self.NAME + self.messageId++;
+            data.receiver = receiver;
+            data.sender = self.NAME;
+            const e = new CustomEvent(self.EVENT_NAME, {
+                detail: JSON.stringify(data),
+            });
+
+            if (sendOnly) {
+                document.dispatchEvent(e);
+            } else {
+                return await new Promise((res, rej) => {
+                    self.messageQueue.push({
+                        callback: (response) => {
+                            res(response);
+                        },
+                        messageId: data.messageId
+                    });
+                    document.dispatchEvent(e);
+                });
+            }
+        };
+
+        Messenger.prototype.onmessage = function (data) { };
+
+        return Messenger;
+    })();
+
+    const messenger = new Messenger('shosato.jp', 'inject');
 
     const Sequential = (function () {
         const Sequential = function () {
@@ -145,19 +144,21 @@ var CODE;
         const sequential = new Sequential();
         let tempValue = {};
 
-        function chrome_storage_local_set_all() {
-            return new Promise((res) => {
-                chrome.storage.local.set({
-                    tempValue
-                }, () => {
+        async function chrome_storage_local_set_all() {
+            localStorage.setItem('tempValue', JSON.stringify(tempValue));
+            // return new Promise((res) => {
+            //     chrome.storage.local.set({
+            //         tempValue
+            //     }, () => {
 
-                    console.log(tempValue)
-                });
-            });
+            //         console.log(tempValue)
+            //     });
+            // });
         }
 
-        function chrome_storage_local_get_all() {
-            return new Promise((res) => chrome.storage.local.get(['tempValue'], result => res(result['tempValue'])));
+        async function chrome_storage_local_get_all() {
+            return JSON.parse(localStorage.getItem('tempValue') || '{}');
+            // return new Promise((res) => chrome.storage.local.get(['tempValue'], result => res(result['tempValue'])));
         }
 
         ExtensionIO.setValue = ExtensionIO.isTampermonkey ? GM_setValue : function (key, value) {
@@ -184,17 +185,12 @@ var CODE;
         ExtensionIO.loadResources = async function (resources_map) {
             for (const key in resources_map) {
                 if (resources_map.hasOwnProperty(key)) {
-                    const url = await new Promise((res, rej) => {
-                        chrome.runtime.sendMessage('pdpbmaeabdhagcdljokcmoeohiagongo', {
-                            type: 'sendMessage',
-                        }), response => {
-                            console.log(response);
-                            res(response);
-                        };
+                    const res = await messenger.send('content', {
+                        method: 'getURL',
+                        args: [resources_map[key]],
                     });
-                    console.log(resources_map[key]);
-                    // const url = chrome.runtime.getURL(resources_map[key]);
-                    this.resources[key] = await (await fetch(url)).text();
+                    console.log(res);
+                    this.resources[key] = await (await fetch(res.result)).text();
                 }
             }
         };
@@ -222,7 +218,9 @@ var CODE;
         // }, e => {
         //     console.log(e);
         // });
+        const s = Date.now();
         await ExtensionIO.loadResources(ExtensionIO.resources_map);
+        console.log(Date.now() - s);
         await ExtensionIO.getValuesOnInit();
     }
 
@@ -1497,7 +1495,7 @@ var CODE;
             }
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
+        function onDOMContentLoaded() {
             console.log('%c----------DOMContentLoaded----------', `color:${Colors.LightBlue};`);
 
             //check if ...
@@ -1543,8 +1541,13 @@ var CODE;
                     });
                 }
             }
+        }
 
-        });
+        if (document.body) {
+            onDOMContentLoaded();
+        } else {
+            document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
+        }
 
         window.addEventListener('load', function () {
             console.log('%c----------------load----------------', `color:${Colors.LightGreen};`);

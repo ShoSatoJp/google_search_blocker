@@ -1,16 +1,3 @@
-function injectScript(parent, path) {
-    const e = document.createElement('script');
-    if (typeof 'chrome' !== 'undefined') {
-        e.setAttribute('src', chrome.extension.getURL(path));
-    } else if (typeof 'browser' !== 'undefined') {
-        e.setAttribute('src', browser.runtime.getURL(path));
-    }
-    parent.appendChild(e);
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    injectScript(document.body, '/google_search_blocker.user.js');
-});
 const Messenger = (() => {
     const Messenger = function (event_name, name) {
         const self = this;
@@ -67,7 +54,19 @@ const Messenger = (() => {
     return Messenger;
 })();
 
+window.addEventListener('DOMContentLoaded', () => {
+    console.log('domcontentloaded');
+});
+
 const m = new Messenger('shosato.jp', 'content');
 m.onmessage = function (data) {
-    m.sendOnly(data.sender, { aaa: 'hogehoge' }, data.messageId, true);
+    switch (data.method) {
+        case 'getURL':
+            m.send(data.sender, {
+                result: chrome.extension.getURL(...data.args)
+            }, data.messageId, true);
+            break;
+        default:
+            m.send(data.sender, {}, data.messageId, true);
+    }
 }
